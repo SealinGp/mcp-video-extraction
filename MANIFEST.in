@@ -1,0 +1,13 @@
+include LICENSE
+include README.md
+include pyproject.toml
+
+recursive-include src *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[cod]
+recursive-exclude * *.so
+recursive-exclude * *.pt
+recursive-exclude * *.mp3
+recursive-exclude * *.mp4
+recursive-exclude * *.wav
+recursive-exclude * *.m4a 

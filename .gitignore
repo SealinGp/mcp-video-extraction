@@ -1,6 +1,50 @@
-.vscode
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 .env
-__pycache__
 .venv
+.venv-test
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Whisper model files
+*.pt
+models/
+
+# Temp files
+tmp/
+temp/
+*.mp3
 *.mp4
-dist
+*.wav
+*.m4a
+
+# Logs
+*.log
