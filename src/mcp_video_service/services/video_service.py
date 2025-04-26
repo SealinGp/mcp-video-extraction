@@ -96,7 +96,7 @@ class VideoService:
         # 确保临时目录存在
         os.makedirs(self.config['storage']['temp_dir'], exist_ok=True)
 
-    async def download(self, url: str, output_dir: str = '.') -> Optional[str]:
+    async def download(self, url: str) -> Optional[str]:
         """
         从各种视频平台下载完整视频。支持的平台包括但不限于：
         - YouTube
@@ -122,6 +122,7 @@ class VideoService:
             Exception: 当下载失败时抛出异常
         """
         # 确保输出目录存在
+        output_dir = self.config['storage']['temp_dir']
         os.makedirs(output_dir, exist_ok=True)
         
         # 设置下载选项
