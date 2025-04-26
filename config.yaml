@@ -1,0 +1,17 @@
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: true
+
+whisper:
+  model: "base"  # 可选: tiny, base, small, medium, large
+  language: "auto"  # 设置为特定语言代码或 "auto" 进行自动检测
+
+youtube:
+  download:
+    format: "bestaudio/best"
+    audio_quality: "192"
+    audio_format: "mp3"
+
+storage:
+  temp_dir: "/tmp/mcp-ytb-text-extraction" 
