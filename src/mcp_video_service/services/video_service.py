@@ -2,7 +2,6 @@ import os
 import tempfile
 import whisper
 import yt_dlp
-import yaml
 import logging
 from typing import Optional
 
@@ -43,10 +42,24 @@ def download_hook(d):
 class VideoService:
     """视频服务，负责下载视频的音频部分并进行文字转换处理"""
     
-    def __init__(self, config_path: str = "config.yaml"):
-        # 加载配置文件
-        with open(config_path, 'r', encoding='utf-8') as f:
-            self.config = yaml.safe_load(f)
+    def __init__(self):
+        # 从环境变量读取配置
+        self.config = {
+            'whisper': {
+                'model': os.getenv('WHISPER_MODEL', 'base'),
+                'language': os.getenv('WHISPER_LANGUAGE', 'auto')
+            },
+            'youtube': {
+                'download': {
+                    'format': os.getenv('YOUTUBE_FORMAT', 'bestaudio'),
+                    'audio_format': os.getenv('AUDIO_FORMAT', 'mp3'),
+                    'audio_quality': os.getenv('AUDIO_QUALITY', '192')
+                }
+            },
+            'storage': {
+                'temp_dir': os.getenv('TEMP_DIR', '/tmp/mcp-video')
+            }
+        }
             
         logger.info("初始化 Whisper 模型...")
         self.model = whisper.load_model(self.config['whisper']['model'])
@@ -55,9 +68,9 @@ class VideoService:
         self.common_opts = {
             'logger': VideoLogger(),  # 使用自定义日志处理器
             'progress_hooks': [download_hook],  # 使用下载进度回调
-            'retries': 10,  # 重试次数
-            'fragment_retries': 10,  # 分片下载重试次数
-            'socket_timeout': 30,  # 设置较长的超时时间
+            'retries': int(os.getenv('DOWNLOAD_RETRIES', '10')),  # 重试次数
+            'fragment_retries': int(os.getenv('FRAGMENT_RETRIES', '10')),  # 分片下载重试次数
+            'socket_timeout': int(os.getenv('SOCKET_TIMEOUT', '30')),  # 设置较长的超时时间
             'nocheckcertificate': True,  # 忽略 SSL 证书验证
             'ignoreerrors': True,  # 忽略可恢复的错误
         }
