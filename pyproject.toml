@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-video-extraction"
-version = "0.1.4"
+version = "0.1.5"
 description = "A Model Context Protocol server that provides text extraction capabilities from various video platforms and audio files, supporting multiple platforms like YouTube, Bilibili, TikTok, and more using Whisper for high-quality speech recognition"
 readme = "README.md"
 authors = [{ name = "Seazhang" }]
@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "openai-whisper>=20231117",
     "yt-dlp>=2024.3.10",
-    "mcp>=1.1.3",
+    "mcp[cli]>=1.1.3",
     "pydantic>=2.0.0",
 ]
 
@@ -38,7 +38,7 @@ mcp-video-extraction = "mcp_video_service.__main__:main"
 dev-dependencies = [
     "openai-whisper>=20231117",
     "yt-dlp>=2024.3.10",
-    "mcp>=1.1.3",
+    "mcp[cli]>=1.1.3",
     "pydantic>=2.0.0",
 ]
 

@@ -3,6 +3,7 @@ import tempfile
 import whisper
 import yt_dlp
 import logging
+import uuid
 from typing import Optional
 
 # 配置日志
@@ -40,7 +41,18 @@ def download_hook(d):
         logger.info('下载完成，开始后处理...')
 
 class VideoService:
-    """视频服务，负责下载视频的音频部分并进行文字转换处理"""
+    """视频服务，负责下载视频的音频部分并进行文字转换处理"""    
+      
+    def _generate_unique_filename(self, ext: str) -> str:
+        """生成唯一的文件名
+        
+        Args:
+            ext: 文件扩展名（不包含点号）
+            
+        Returns:
+            str: 生成的唯一文件名（格式：uuid.扩展名）
+        """
+        return f"{uuid.uuid4()}.{ext}"
     
     def __init__(self):
         # 从环境变量读取配置
@@ -84,13 +96,14 @@ class VideoService:
                 'preferredcodec': self.config['youtube']['download']['audio_format'],
                 'preferredquality': self.config['youtube']['download']['audio_quality'],
             }],
+            'outtmpl': '%(id)s.%(ext)s',  # 使用视频ID作为临时文件名
         }
         
         # 视频下载配置
         self.video_opts = {
             **self.common_opts,
             'format': 'best',
-            'outtmpl': '%(title)s.%(ext)s',
+            'outtmpl': '%(id)s.%(ext)s',  # 使用视频ID作为临时文件名
         }
 
         # 确保临时目录存在
@@ -124,17 +137,22 @@ class VideoService:
         output_dir = self.config['storage']['temp_dir']
         os.makedirs(output_dir, exist_ok=True)
         
-        # 设置下载选项
-        opts = self.video_opts.copy()
-        opts['outtmpl'] = os.path.join(output_dir, opts['outtmpl'])
-        
         try:
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                # # 获取视频信息
+            with yt_dlp.YoutubeDL(self.video_opts) as ydl:
+                # 获取视频信息
                 info = ydl.extract_info(url, download=True)
                 # 获取下载后的文件路径
-                video_path = ydl.prepare_filename(info)
-                return video_path
+                temp_path = ydl.prepare_filename(info)
+                
+                # 使用唯一文件名重命名文件
+                file_ext = os.path.splitext(temp_path)[1][1:]  # 获取扩展名（不含点号）
+                new_filename = self._generate_unique_filename(file_ext)
+                new_path = os.path.join(output_dir, new_filename)
+                
+                # 重命名文件
+                os.rename(temp_path, new_path)
+                return new_path
+                
         except Exception as e:
             raise Exception(f"下载视频失败: {str(e)}")
 
@@ -164,15 +182,25 @@ class VideoService:
             Exception: 当下载失败时抛出异常
         """
         with tempfile.TemporaryDirectory(dir=self.config['storage']['temp_dir']) as temp_dir:
-            opts = self.audio_opts.copy()
-            opts['outtmpl'] = os.path.join(temp_dir, '%(title)s.%(ext)s')
-            
             try:
-                with yt_dlp.YoutubeDL(opts) as ydl:
+                with yt_dlp.YoutubeDL(self.audio_opts) as ydl:
                     info = ydl.extract_info(url, download=True)
-                    return os.path.join(temp_dir, f"{info['title']}.{self.config['youtube']['download']['audio_format']}")
+                    temp_path = ydl.prepare_filename(info)
+                    
+                    # 使用唯一文件名
+                    new_filename = self._generate_unique_filename(self.config['youtube']['download']['audio_format'])
+                    new_path = os.path.join(temp_dir, new_filename)
+                    
+                    # 重命名文件
+                    audio_path = os.path.splitext(temp_path)[0] + '.' + self.config['youtube']['download']['audio_format']
+                    if os.path.exists(audio_path):
+                        os.rename(audio_path, new_path)
+                        return new_path
+                    
+                    return None
+                    
             except Exception as e:
-                raise Exception(f"下载视频失败: {str(e)}")
+                raise Exception(f"下载音频失败: {str(e)}")
 
     async def extract_text(self, audio_path: str) -> str:
         """
@@ -238,4 +266,8 @@ class VideoService:
                 await self.cleanup(audio_path)
 
         except Exception as e:
-            raise Exception(f"视频处理失败: {str(e)}") 
+            raise Exception(f"视频处理失败: {str(e)}")
+
+    def _generate_unique_filename(self, file_ext: str) -> str:
+        """生成唯一的文件名"""
+        return f"{uuid.uuid4()}.{file_ext}" 
