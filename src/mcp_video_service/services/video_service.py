@@ -113,7 +113,6 @@ class VideoService:
         
         Args:
             url: 视频平台的URL
-            output_dir: 视频保存目录，默认为当前目录
             
         Returns:
             str: 下载的视频文件路径
