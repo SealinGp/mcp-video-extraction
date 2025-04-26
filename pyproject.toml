@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-video-extraction"
-version = "0.1.0"
+version = "0.1.1"
 description = "An MCP server that provides text extraction capabilities from various video platforms and audio files"
 readme = "README.md"
 authors = [
